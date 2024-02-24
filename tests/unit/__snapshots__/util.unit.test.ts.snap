@@ -1,0 +1,11 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`util makeSetClause should return a valid set clause 1`] = `"name = $1, age = $2, phone = $3"`;
+
+exports[`util makeSetClause should return a valid set clause 2`] = `
+[
+  "foo",
+  42,
+  null,
+]
+`;

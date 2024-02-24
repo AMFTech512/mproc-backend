@@ -1,0 +1,10 @@
+-- Create the tables
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY NOT NULL,
+  username TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS uploads (
+  filename TEXT PRIMARY KEY NOT NULL
+);
