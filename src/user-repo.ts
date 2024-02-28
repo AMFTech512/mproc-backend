@@ -1,7 +1,7 @@
 import { DIContainer } from "./di";
 import { makeSetClause } from "./util";
 
-interface User {
+interface UserRow {
   id: string;
   username: string;
 }
@@ -12,11 +12,11 @@ export async function getUser(container: DIContainer, userId: string) {
   const res = await dbClient.query("SELECT * FROM users WHERE id = $1", [
     userId,
   ]);
-  const user = res.rows[0] as User;
+  const user = res.rows[0] as UserRow;
   return user;
 }
 
-export function insertUser(container: DIContainer, user: User) {
+export function insertUser(container: DIContainer, user: UserRow) {
   const dbClient = container.postgresClient;
 
   return dbClient.query("INSERT INTO users (id, username) VALUES ($1, $2)", [
@@ -31,7 +31,7 @@ export async function deleteUser(container: DIContainer, userId: string) {
   return dbClient.query("DELETE FROM users WHERE id = $1", [userId]);
 }
 
-export function makeUpdateUserQuery(user: Partial<User>) {
+export function makeUpdateUserQuery(user: Partial<UserRow>) {
   const [clause, values, nextIdx] = makeSetClause(user, { exclude: ["id"] });
   return {
     text: `UPDATE users SET ${clause} WHERE id = $${nextIdx}`,
@@ -39,7 +39,10 @@ export function makeUpdateUserQuery(user: Partial<User>) {
   };
 }
 
-export async function updateUser(container: DIContainer, user: Partial<User>) {
+export async function updateUser(
+  container: DIContainer,
+  user: Partial<UserRow>
+) {
   const dbClient = container.postgresClient;
 
   return dbClient.query(makeUpdateUserQuery(user));
