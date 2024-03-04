@@ -31,6 +31,7 @@ export const OPERATIONS = [
   "threshold",
   "transparent",
   "trim",
+  "watermark",
   "wave",
 ] as const;
 type OperationType = (typeof OPERATIONS)[number];
@@ -66,6 +67,26 @@ export interface ArgumentMap {
   transparent: { color: string };
   trim: undefined;
   wave: { amplitude: number; wavelength: number };
+  watermark: {
+    x: number;
+    y: number;
+    text: string;
+    angle?: number;
+    size?: number;
+    brightness?: number;
+    saturation?: number;
+    color?: string;
+    gravity?:
+      | "NorthWest"
+      | "North"
+      | "NorthEast"
+      | "West"
+      | "Center"
+      | "East"
+      | "SouthWest"
+      | "South"
+      | "SouthEast";
+  };
 }
 
 export interface ProcessStep<T extends OperationType> {
@@ -173,6 +194,29 @@ export const SCHEMA_MAP: Record<OperationType, Joi.Schema | undefined> = {
     color: Joi.string().required(),
   }),
   trim: undefined,
+  watermark: Joi.object({
+    x: Joi.number().required(),
+    y: Joi.number().required(),
+    text: Joi.string().required(),
+    angle: Joi.number().optional(),
+    size: Joi.number().optional(),
+    brightness: Joi.number().optional(),
+    saturation: Joi.number().optional(),
+    color: Joi.string().optional(),
+    gravity: Joi.string()
+      .allow(
+        "NorthWest",
+        "North",
+        "NorthEast",
+        "West",
+        "Center",
+        "East",
+        "SouthWest",
+        "South",
+        "SouthEast"
+      )
+      .optional(),
+  }),
   wave: Joi.object({
     amplitude: Joi.number().required(),
     wavelength: Joi.number().required(),
@@ -288,6 +332,21 @@ export const PROCESS_FUNCTION_MAP: ProcessFunctionMap = {
   },
   trim: function (state, props) {
     return state.trim();
+  },
+  watermark: function (state, props, args) {
+    return (
+      state
+        .font("Arial", 300)
+        // .watermark(args.brightness ?? 100, args.saturation ?? 100)
+        .fill(args.color ?? "black")
+        // be careful here... the text is not escaped.
+        // there could be a security vulnerability here
+        .draw(
+          `gravity ${args.gravity ?? "NorthWest"} rotate ${
+            args.angle ?? 0
+          } text ${args.x},${args.y} '${args.text}'`
+        )
+    );
   },
   wave: function (state, props, args) {
     return state.wave(args.amplitude, args.wavelength);

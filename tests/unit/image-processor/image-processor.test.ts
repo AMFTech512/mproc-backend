@@ -356,6 +356,26 @@ describe("image-processor", () => {
 
       await writeImage(state, getDestPath("1-wave.jpg"));
     });
+
+    test("watermark", async () => {
+      let state = gm(getAssetPath("1.jpg"));
+
+      state = await processStep(state, {
+        operation: "watermark",
+        params: {
+          x: 0,
+          y: 0,
+          text: "watermark",
+          angle: 315,
+          size: 300,
+          gravity: "Center",
+          color: "white",
+          brightness: 150,
+        },
+      });
+
+      await writeImage(state, getDestPath("1-watermark.jpg"));
+    });
   });
 
   test("processSteps", async () => {
