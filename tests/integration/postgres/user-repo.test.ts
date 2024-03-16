@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { DIContainer } from "../../../src/di";
 import { dropDb, initDb, initPostgresClient } from "../../../src/postgres";
 import {
+  UserRow,
   deleteUser,
   getUser,
   insertUser,
@@ -28,14 +29,29 @@ describe("user-repo integration", () => {
     await dropDb(dbName);
   });
 
-  const testUser = {
+  const testUser: UserRow = {
     id: "b5ff1ba9-db12-4724-86c5-738cce48f057",
-    username: "bob",
+    email: "bob@example.com",
+    password_hash: "!",
   };
 
   describe("insertUser", () => {
     test("should insert a user successfully", async () => {
       await insertUser(container, testUser);
+    });
+
+    test("should not insert a user with the same id", async () => {
+      expect(insertUser(container, testUser)).rejects.toThrow();
+    });
+
+    test("should not insert a user with the same email", async () => {
+      const user = {
+        id: "17a2d1a7-99b8-4873-857b-cee8641cc434",
+        email: "bob@example.com",
+        password_hash: "!",
+      };
+
+      expect(insertUser(container, user)).rejects.toThrow();
     });
   });
 
@@ -50,13 +66,13 @@ describe("user-repo integration", () => {
     test("should update the user successfully", async () => {
       const updatedUser = {
         id: testUser.id,
-        username: "alice",
+        email: "alice@example.com",
       };
 
       await updateUser(container, updatedUser);
 
       const user = await getUser(container, testUser.id);
-      expect(user).toEqual(updatedUser);
+      expect(user).toMatchObject(updatedUser);
     });
   });
 

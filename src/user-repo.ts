@@ -1,9 +1,10 @@
 import { DIContainer } from "./di";
 import { makeSetClause } from "./util";
 
-interface UserRow {
+export interface UserRow {
   id: string;
-  username: string;
+  email: string;
+  password_hash: string;
 }
 
 export async function getUser(container: DIContainer, userId: string) {
@@ -19,10 +20,10 @@ export async function getUser(container: DIContainer, userId: string) {
 export function insertUser(container: DIContainer, user: UserRow) {
   const dbClient = container.postgresClient;
 
-  return dbClient.query("INSERT INTO users (id, username) VALUES ($1, $2)", [
-    user.id,
-    user.username,
-  ]);
+  return dbClient.query(
+    "INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)",
+    [user.id, user.email, user.password_hash]
+  );
 }
 
 export async function deleteUser(container: DIContainer, userId: string) {
