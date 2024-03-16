@@ -45,8 +45,7 @@ export const handleUpload: (container: DIContainer) => RequestHandler =
       }
     } else {
       // if there is no file, send a 400 error
-      // TODO: send a more descriptive error message
-      res.sendStatus(400);
+      res.status(400).send("No file provided.");
     }
 
     // delete the file from the file system regardless of whether or not the request was successful
