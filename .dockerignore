@@ -13,3 +13,6 @@ helm-charts
 .editorconfig
 .idea
 coverage*
+
+# Finder (MacOS) folder config
+.DS_Store

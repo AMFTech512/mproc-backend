@@ -1,11 +1,7 @@
 import { RequestHandler } from "express";
 import { DIContainer } from "./di";
-import {
-  ProcessStep,
-  createProcessStep,
-  getBuffer,
-  processSteps,
-} from "./image-processor";
+import { ProcessStep, getBuffer, processSteps } from "./image-processor";
+import { ValidationError } from "joi";
 import gm from "gm";
 
 // POST /upload
@@ -18,21 +14,36 @@ export const handleUpload: (container: DIContainer) => RequestHandler =
         req.file.filename,
       ]);
 
-      let state = gm(req.file.path);
+      let reqProcessSteps: ProcessStep<any>[];
+      try {
+        reqProcessSteps = JSON.parse(req.body.processSteps);
+      } catch (e) {
+        res
+          .status(400)
+          .send("`processSteps` must be a valid JSON array of process steps.");
+        return;
+      }
 
-      const reqProcessSteps = JSON.parse(
-        req.body.processSteps
-      ) as ProcessStep<any>[];
+      try {
+        const state = gm(req.file.path);
 
-      state = await processSteps(state, reqProcessSteps);
+        const imgBuffer = await processSteps(state, reqProcessSteps).then(
+          (state) => getBuffer(state)
+        );
 
-      const imgBuffer = await getBuffer(state);
-
-      res.status(200).send(imgBuffer);
+        res.status(200).send(imgBuffer);
+      } catch (e) {
+        if (e instanceof ValidationError) {
+          res.status(400).send(e.annotate(true));
+        } else {
+          res.status(500).send("A server error occurred.");
+        }
+      }
 
       // TODO: delete the file from the file system
     } else {
       // if there is no file, send a 400 error
+      // TODO: send a more descriptive error message
       res.sendStatus(400);
     }
   };

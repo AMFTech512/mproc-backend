@@ -32,15 +32,14 @@
         fetch("http://localhost:3000/upload", {
           method: "POST",
           body: formData,
-        })
-          .then((response) => response.blob())
-          .then((result) => {
+        }).then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`Error converting image: ${await response.text()}`);
+          } else {
             const imgEl = document.getElementById("result-image");
-            imgEl.src = URL.createObjectURL(result);
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
+            imgEl.src = URL.createObjectURL(await response.blob());
+          }
+        });
       });
   </script>
 </html>
