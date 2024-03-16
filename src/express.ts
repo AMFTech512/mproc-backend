@@ -4,6 +4,7 @@ import Joi from "joi";
 import multer from "multer";
 import cors from "cors";
 import { handleUpload } from "./handlers";
+import packageJson from "../package.json";
 
 interface ServerConfig {
   port: number;
@@ -31,7 +32,7 @@ export function initExpressApp(container: DIContainer) {
   app.use(cors());
 
   app.get("/", (req, res) => {
-    res.send("Hello World");
+    res.send(`v${packageJson.version} - OK`);
   });
 
   app.post("/upload", upload.single("file"), handleUpload(container));

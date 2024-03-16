@@ -2,6 +2,7 @@
   "name": "mproc",
   "module": "index.ts",
   "type": "module",
+  "version": "1.0.0",
   "scripts": {
     "start": "bun src/index.ts",
     "init:db": "bun run scripts/init-db.ts"
