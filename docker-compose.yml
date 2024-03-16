@@ -19,6 +19,7 @@ services:
     volumes:
       - ./src:/usr/src/app/src
       - ./tests:/usr/src/app/tests
+      - ./uploads:/usr/src/app/uploads
     ports:
       - 3000:3000
 

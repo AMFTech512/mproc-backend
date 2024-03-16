@@ -447,3 +447,15 @@ export async function writeImage(state: gm.State, path: string) {
     });
   });
 }
+
+export async function getBuffer(state: gm.State) {
+  return new Promise<Buffer>((res, rej) => {
+    state.toBuffer((err, buffer) => {
+      if (err) {
+        rej(err);
+      } else {
+        res(buffer);
+      }
+    });
+  });
+}

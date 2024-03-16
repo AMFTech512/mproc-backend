@@ -8,6 +8,7 @@
   <body>
     <input type="file" id="file-input" />
     <button id="upload-button">Upload</button>
+    <img id="result-image" alt="Result Image" />
   </body>
 
   <script>
@@ -18,14 +19,24 @@
         var file = fileInput.files[0];
         var formData = new FormData();
         formData.append("file", file);
+        formData.append(
+          "processSteps",
+          JSON.stringify([
+            {
+              operation: "border",
+              params: { width: 20, height: 20, color: "blue" },
+            },
+          ])
+        );
 
         fetch("http://localhost:3000/upload", {
           method: "POST",
           body: formData,
         })
-          .then((response) => response.text())
+          .then((response) => response.blob())
           .then((result) => {
-            console.log("Success:", result);
+            const imgEl = document.getElementById("result-image");
+            imgEl.src = URL.createObjectURL(result);
           })
           .catch((error) => {
             console.error("Error:", error);
