@@ -1,5 +1,6 @@
 import { createDIContainer } from "./di";
 import { initExpressApp } from "./express";
+import { getJwtConfig } from "./jwt";
 import { initQueue } from "./p-queue";
 import { initPostgresClient } from "./postgres";
 
@@ -16,9 +17,13 @@ async function bootstrap() {
   console.log("Initializing postgres client...");
   container.postgresClient = await initPostgresClient();
 
-  // initialize the process queue
+  // initialize the image process queue
   console.log("Initializing process queue...");
-  container.queue = initQueue();
+  container.imagePQueue = initQueue();
+
+  // initialize the jwt config
+  console.log("Initializing jwt config...");
+  container.jwtConfig = getJwtConfig();
 
   // initialize the express app
   console.log("Initializing express app...");

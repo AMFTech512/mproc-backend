@@ -13,6 +13,7 @@ services:
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: postgres
       SERVER_PORT: 3000
+      JWT_SECRET: secret
     depends_on:
       postgres_db:
         condition: service_healthy

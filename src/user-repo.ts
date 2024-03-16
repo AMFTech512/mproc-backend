@@ -7,11 +7,27 @@ export interface UserRow {
   password_hash: string;
 }
 
-export async function getUser(container: DIContainer, userId: string) {
+export async function getUserById(
+  container: DIContainer,
+  userId: string
+): Promise<UserRow | undefined> {
   const dbClient = container.postgresClient;
 
   const res = await dbClient.query("SELECT * FROM users WHERE id = $1", [
     userId,
+  ]);
+  const user = res.rows[0] as UserRow;
+  return user;
+}
+
+export async function getUserByEmail(
+  container: DIContainer,
+  email: string
+): Promise<UserRow | undefined> {
+  const dbClient = container.postgresClient;
+
+  const res = await dbClient.query("SELECT * FROM users WHERE email = $1", [
+    email,
   ]);
   const user = res.rows[0] as UserRow;
   return user;

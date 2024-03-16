@@ -4,7 +4,8 @@ import { dropDb, initDb, initPostgresClient } from "../../../src/postgres";
 import {
   UserRow,
   deleteUser,
-  getUser,
+  getUserByEmail,
+  getUserById,
   insertUser,
   updateUser,
 } from "../../../src/user-repo";
@@ -55,9 +56,16 @@ describe("user-repo integration", () => {
     });
   });
 
-  describe("getUser", () => {
+  describe("getUserById", () => {
     test("should get the user successfully", async () => {
-      const user = await getUser(container, testUser.id);
+      const user = await getUserById(container, testUser.id);
+      expect(user).toEqual(testUser);
+    });
+  });
+
+  describe("getUserByEmail", () => {
+    test("should get the user successfully", async () => {
+      const user = await getUserByEmail(container, testUser.email);
       expect(user).toEqual(testUser);
     });
   });
@@ -71,7 +79,7 @@ describe("user-repo integration", () => {
 
       await updateUser(container, updatedUser);
 
-      const user = await getUser(container, testUser.id);
+      const user = await getUserById(container, testUser.id);
       expect(user).toMatchObject(updatedUser);
     });
   });
@@ -80,7 +88,7 @@ describe("user-repo integration", () => {
     test("should delete the user successfully", async () => {
       await deleteUser(container, testUser.id);
 
-      const user = await getUser(container, testUser.id);
+      const user = await getUserById(container, testUser.id);
       expect(user).toBeUndefined();
     });
   });
