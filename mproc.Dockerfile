@@ -9,7 +9,7 @@ RUN apt update && apt install graphicsmagick -y
 # this will cache them and speed up future builds
 FROM base AS install
 RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
+COPY --chown=bun:bun package.json bun.lockb /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
 
 # install with --production (exclude devDependencies)
@@ -21,17 +21,21 @@ RUN cd /temp/prod && bun install --frozen-lockfile --production
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
+COPY --chown=bun:bun . .
 
 # [optional] tests & build
-ENV NODE_ENV=production
-ENV POSTGRES_HOST=localhost
-ENV POSTGRES_PORT=5432
-ENV POSTGRES_DATABASE=mproc_local
-ENV POSTGRES_USERNAME=postgres
-ENV POSTGRES_PASSWORD=postgres
-ENV SERVER_PORT=3000
-RUN bun test unit
+# ENV NODE_ENV=production
+# ENV POSTGRES_HOST=localhost
+# ENV POSTGRES_PORT=5432
+# ENV POSTGRES_DATABASE=mproc_local
+# ENV POSTGRES_USERNAME=postgres
+# ENV POSTGRES_PASSWORD=postgres
+# ENV SERVER_PORT=3000
+# RUN bun test unit
+
+USER bun
+EXPOSE 3000/tcp
+ENTRYPOINT [ "bun", "run", "--watch", "src/index.ts" ]
 
 # copy production dependencies and source code into final image
 FROM base AS release

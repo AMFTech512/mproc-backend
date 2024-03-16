@@ -57,7 +57,10 @@ export async function initPostgresClient(config?: Partial<PostgresConfig>) {
   return client;
 }
 
-const TABLES_SQL_PATH = path.resolve(import.meta.dir, "../db/init_tables.sql");
+const TABLES_SQL_PATH = path.resolve(
+  import.meta.dir,
+  "../db/def/init_tables.sql"
+);
 
 export async function initDb(dbName?: string) {
   console.log(`Creating database ${dbName} and tables...`);

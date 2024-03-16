@@ -1,8 +1,31 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres
+  mproc:
+    build:
+      context: .
+      dockerfile: mproc.Dockerfile
+      target: prerelease
+    environment:
+      POSTGRES_HOST: postgres_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: mproc_local
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+      SERVER_PORT: 3000
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./tests:/usr/src/app/tests
+    ports:
+      - 3000:3000
+
+  postgres_db:
+    build:
+      context: .
+      dockerfile: postgres.Dockerfile
     restart: always
     # set shared memory limit when using docker-compose
     shm_size: 128mb
@@ -14,10 +37,12 @@ services:
     #      size: 134217728 # 128*2^20 bytes = 128Mb
     environment:
       POSTGRES_PASSWORD: postgres
-      PGDATA: /var/lib/postgresql/data/pgdata
 
-    # volumes:
-    #   - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
     ports:
       - 5432:5432
@@ -27,6 +52,3 @@ services:
     restart: always
     ports:
       - 8080:8080
-
-volumes:
-  postgres_data:

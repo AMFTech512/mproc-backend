@@ -1,9 +1,9 @@
 -- Conditionally create the database (if it doesn't exist)
-SELECT 'CREATE DATABASE mproc'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mproc')\gexec
+SELECT 'CREATE DATABASE mproc_local'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mproc_local')\gexec
 
 -- Connect to the database
-\c mproc
+\c mproc_local
 
 -- Create the tables
-\i init_tables.sql
+\i /docker-entrypoint-initdb.d/def/init_tables.sql
