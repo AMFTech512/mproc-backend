@@ -22,7 +22,3 @@ CREATE TABLE IF NOT EXISTS key_usage_log (
   operation VARCHAR(100) NOT NULL,
   date_executed TIMESTAMP DEFAULT NOW() NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS uploads (
-  filename TEXT PRIMARY KEY NOT NULL
-);

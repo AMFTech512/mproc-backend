@@ -43,9 +43,10 @@ export function initExpressApp(container: DIContainer) {
 
   app.post(
     "/upload",
-    upload.single("file"),
     // use the apiKey middleware to authenticate the request with an api key
     apiKey(container),
+    // extract the file from the request
+    upload.single("file"),
     // ts doesn't like the fact that we've added the apiKey to the request object
     handleUpload(container) as unknown as RequestHandler
   );

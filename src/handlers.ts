@@ -13,8 +13,6 @@ import { ApiKeyRepo } from "./api-key-repo";
 export const handleUpload =
   (container: DIContainer) =>
   async (req: ApiKeyAuthedRequest, res: Response) => {
-    const dbClient = container.postgresClient;
-
     if (req.file) {
       let reqProcessSteps: ProcessStep<any>[];
       try {
