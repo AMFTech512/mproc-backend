@@ -1,3 +1,4 @@
+import { Client } from "pg";
 import { DIContainer } from "./di";
 import { makeSetClause } from "./util";
 
@@ -7,60 +8,51 @@ export interface UserRow {
   password_hash: string;
 }
 
-export async function getUserById(
-  container: DIContainer,
-  userId: string
-): Promise<UserRow | undefined> {
-  const dbClient = container.postgresClient;
+export class UserRepo {
+  private _dbClient: Client;
 
-  const res = await dbClient.query("SELECT * FROM users WHERE id = $1", [
-    userId,
-  ]);
-  const user = res.rows[0] as UserRow;
-  return user;
-}
+  constructor(container: DIContainer) {
+    this._dbClient = container.postgresClient;
+  }
 
-export async function getUserByEmail(
-  container: DIContainer,
-  email: string
-): Promise<UserRow | undefined> {
-  const dbClient = container.postgresClient;
+  async getById(userId: string): Promise<UserRow | undefined> {
+    const res = await this._dbClient.query(
+      "SELECT * FROM users WHERE id = $1",
+      [userId]
+    );
+    const user = res.rows[0] as UserRow;
+    return user;
+  }
 
-  const res = await dbClient.query("SELECT * FROM users WHERE email = $1", [
-    email,
-  ]);
-  const user = res.rows[0] as UserRow;
-  return user;
-}
+  async getByEmail(email: string): Promise<UserRow | undefined> {
+    const res = await this._dbClient.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
+    const user = res.rows[0] as UserRow;
+    return user;
+  }
 
-export function insertUser(container: DIContainer, user: UserRow) {
-  const dbClient = container.postgresClient;
+  async insert(user: UserRow) {
+    return this._dbClient.query(
+      "INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)",
+      [user.id, user.email, user.password_hash]
+    );
+  }
 
-  return dbClient.query(
-    "INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)",
-    [user.id, user.email, user.password_hash]
-  );
-}
+  async delete(userId: string) {
+    return this._dbClient.query("DELETE FROM users WHERE id = $1", [userId]);
+  }
 
-export async function deleteUser(container: DIContainer, userId: string) {
-  const dbClient = container.postgresClient;
+  static makeUpdateQuery(user: Partial<UserRow>) {
+    const [clause, values, nextIdx] = makeSetClause(user, { exclude: ["id"] });
+    return {
+      text: `UPDATE users SET ${clause} WHERE id = $${nextIdx}`,
+      values: [...values, user.id],
+    };
+  }
 
-  return dbClient.query("DELETE FROM users WHERE id = $1", [userId]);
-}
-
-export function makeUpdateUserQuery(user: Partial<UserRow>) {
-  const [clause, values, nextIdx] = makeSetClause(user, { exclude: ["id"] });
-  return {
-    text: `UPDATE users SET ${clause} WHERE id = $${nextIdx}`,
-    values: [...values, user.id],
-  };
-}
-
-export async function updateUser(
-  container: DIContainer,
-  user: Partial<UserRow>
-) {
-  const dbClient = container.postgresClient;
-
-  return dbClient.query(makeUpdateUserQuery(user));
+  async update(user: Partial<UserRow>) {
+    return this._dbClient.query(UserRepo.makeUpdateQuery(user));
+  }
 }

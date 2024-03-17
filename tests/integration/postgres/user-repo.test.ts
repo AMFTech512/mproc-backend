@@ -1,25 +1,21 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { DIContainer } from "../../../src/di";
 import { dropDb, initDb, initPostgresClient } from "../../../src/postgres";
-import {
-  UserRow,
-  deleteUser,
-  getUserByEmail,
-  getUserById,
-  insertUser,
-  updateUser,
-} from "../../../src/user-repo";
+import { UserRow, UserRepo } from "../../../src/user-repo";
 
 const dbName = `test-${crypto.randomUUID()}`;
 
 describe("user-repo integration", () => {
   let container = {} as DIContainer;
+  let userRepo: UserRepo;
+
   beforeAll(async () => {
     // initialize a test database
     await initDb(dbName);
 
     // create a connection to the test database
     container.postgresClient = await initPostgresClient({ database: dbName });
+    userRepo = new UserRepo(container);
   });
 
   afterAll(async () => {
@@ -36,13 +32,13 @@ describe("user-repo integration", () => {
     password_hash: "!",
   };
 
-  describe("insertUser", () => {
+  describe("insert", () => {
     test("should insert a user successfully", async () => {
-      await insertUser(container, testUser);
+      await userRepo.insert(testUser);
     });
 
     test("should not insert a user with the same id", async () => {
-      expect(insertUser(container, testUser)).rejects.toThrow();
+      expect(userRepo.insert(testUser)).rejects.toThrow();
     });
 
     test("should not insert a user with the same email", async () => {
@@ -52,43 +48,43 @@ describe("user-repo integration", () => {
         password_hash: "!",
       };
 
-      expect(insertUser(container, user)).rejects.toThrow();
+      expect(userRepo.insert(user)).rejects.toThrow();
     });
   });
 
-  describe("getUserById", () => {
+  describe("getById", () => {
     test("should get the user successfully", async () => {
-      const user = await getUserById(container, testUser.id);
+      const user = await userRepo.getById(testUser.id);
       expect(user).toEqual(testUser);
     });
   });
 
-  describe("getUserByEmail", () => {
+  describe("getByEmail", () => {
     test("should get the user successfully", async () => {
-      const user = await getUserByEmail(container, testUser.email);
+      const user = await userRepo.getByEmail(testUser.email);
       expect(user).toEqual(testUser);
     });
   });
 
-  describe("updateUser", () => {
+  describe("update", () => {
     test("should update the user successfully", async () => {
       const updatedUser = {
         id: testUser.id,
         email: "alice@example.com",
       };
 
-      await updateUser(container, updatedUser);
+      await userRepo.update(updatedUser);
 
-      const user = await getUserById(container, testUser.id);
+      const user = await userRepo.getById(testUser.id);
       expect(user).toMatchObject(updatedUser);
     });
   });
 
-  describe("deleteUser", () => {
+  describe("delete", () => {
     test("should delete the user successfully", async () => {
-      await deleteUser(container, testUser.id);
+      await userRepo.delete(testUser.id);
 
-      const user = await getUserById(container, testUser.id);
+      const user = await userRepo.getById(testUser.id);
       expect(user).toBeUndefined();
     });
   });

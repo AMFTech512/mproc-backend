@@ -3,8 +3,14 @@ import { DIContainer } from "./di";
 import Joi from "joi";
 import multer from "multer";
 import cors from "cors";
-import { handleUpload, handleUserCreate, handleUserLogin } from "./handlers";
+import {
+  handleApiTokenCreate,
+  handleUpload,
+  handleUserCreate,
+  handleUserLogin,
+} from "./handlers";
 import packageJson from "../package.json";
+import { authUser } from "./middleware";
 
 interface ServerConfig {
   port: number;
@@ -40,6 +46,8 @@ export function initExpressApp(container: DIContainer) {
   app.post("/user", express.json(), handleUserCreate(container));
 
   app.post("/login", express.json(), handleUserLogin(container));
+
+  app.post("/token", authUser(container), handleApiTokenCreate(container));
 
   app.listen(config.port, () => {
     console.log(`Server is running on port ${config.port}`);

@@ -1,3 +1,3 @@
-import { generateJwtSecret } from "../src/jwt";
+import { generateSecureRandomString } from "../src/util";
 
-console.log(generateJwtSecret());
+console.log(generateSecureRandomString());

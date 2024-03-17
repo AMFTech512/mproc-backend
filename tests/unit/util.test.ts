@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { makeSetClause } from "../../src/util";
+import { generateSecureRandomString, makeSetClause } from "../../src/util";
+import { createHash } from "crypto";
 
 describe("util", () => {
   describe("makeSetClause", () => {

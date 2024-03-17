@@ -1,12 +1,12 @@
-import { RequestHandler } from "express";
+import { RequestHandler, Response } from "express";
 import { DIContainer } from "./di";
 import { ProcessStep, getBuffer, processSteps } from "./image-processor";
 import Joi, { ValidationError } from "joi";
 import gm from "gm";
 import { rm } from "fs/promises";
-import { getUserByEmail, insertUser } from "./user-repo";
 import { hashPassword, verifyPassword } from "./password";
 import { createUserJwt } from "./jwt";
+import { UserAuthedRequest } from "./middleware";
 
 // POST /upload
 export const handleUpload: (container: DIContainer) => RequestHandler =
@@ -78,7 +78,7 @@ export const handleUserCreate: (container: DIContainer) => RequestHandler =
     const body = req.body as UserCreateBody;
 
     try {
-      await insertUser(container, {
+      await container.userRepo.insert({
         id: crypto.randomUUID(),
         email: body.email,
         password_hash: await hashPassword(body.password),
@@ -117,7 +117,7 @@ export const handleUserLogin: (container: DIContainer) => RequestHandler =
 
     const body = req.body as UserLoginBody;
 
-    const userRow = await getUserByEmail(container, body.email);
+    const userRow = await container.userRepo.getByEmail(body.email);
     if (!userRow) {
       res.status(404).send(`User with email ${body.email} not found.`);
       return;
@@ -136,5 +136,12 @@ export const handleUserLogin: (container: DIContainer) => RequestHandler =
     // TODO: get the nonce from the db
     const token = createUserJwt(userRow.id, 0, container.jwtConfig);
 
-    res.status(200).json({ token });
+    res.cookie("jwt", token, { secure: true, httpOnly: true }).sendStatus(200);
+  };
+
+// POST /token
+export const handleApiTokenCreate =
+  (container: DIContainer) => async (req: UserAuthedRequest, res: Response) => {
+    console.log("creating api token for user", req.user.email);
+    res.status(501).send("Not implemented");
   };
