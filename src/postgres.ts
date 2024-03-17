@@ -9,10 +9,10 @@ interface PostgresConfig {
   port: number;
   username: string;
   password: string;
+  databaseUrl: string;
 }
 
 export function getPostgresConfig(): PostgresConfig {
-  console.log("env", process.env);
   return Joi.attempt(
     {
       database: process.env.POSTGRES_DATABASE,
@@ -20,27 +20,35 @@ export function getPostgresConfig(): PostgresConfig {
       port: process.env.POSTGRES_PORT,
       username: process.env.POSTGRES_USERNAME,
       password: process.env.POSTGRES_PASSWORD,
+      databaseUrl: process.env.DATABASE_URL,
     },
-    Joi.object({
-      database: Joi.string().required(),
-      host: Joi.string().required(),
-      port: Joi.number().required(),
-      username: Joi.string().required(),
-      password: Joi.string().required(),
-    })
+    Joi.alternatives().try(
+      Joi.object({
+        database: Joi.string().required(),
+        host: Joi.string().required(),
+        port: Joi.number().required(),
+        username: Joi.string().required(),
+        password: Joi.string().required(),
+      }),
+      Joi.object({
+        databaseUrl: Joi.string().required(),
+      })
+    )
   );
 }
 
 export async function initPostgresClient(config?: Partial<PostgresConfig>) {
   const _config: PostgresConfig = _.defaults(config || {}, getPostgresConfig());
 
-  const client = new Client({
-    database: _config.database,
-    host: _config.host,
-    port: _config.port,
-    user: _config.username,
-    password: _config.password,
-  });
+  const client = _config.databaseUrl
+    ? new Client(_config.databaseUrl)
+    : new Client({
+        database: _config.database,
+        host: _config.host,
+        port: _config.port,
+        user: _config.username,
+        password: _config.password,
+      });
 
   await client.connect();
 
