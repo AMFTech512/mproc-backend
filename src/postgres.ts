@@ -14,14 +14,16 @@ interface PostgresConfig {
 
 export function getPostgresConfig(): PostgresConfig {
   return Joi.attempt(
-    {
-      database: process.env.POSTGRES_DATABASE,
-      host: process.env.POSTGRES_HOST,
-      port: process.env.POSTGRES_PORT,
-      username: process.env.POSTGRES_USERNAME,
-      password: process.env.POSTGRES_PASSWORD,
-      databaseUrl: process.env.DATABASE_URL,
-    },
+    // If DATABASE_URL is set, use it, otherwise use the other environment variables
+    process.env.DATABASE_URL
+      ? { databaseUrl: process.env.DATABASE_URL }
+      : {
+          database: process.env.POSTGRES_DATABASE,
+          host: process.env.POSTGRES_HOST,
+          port: process.env.POSTGRES_PORT,
+          username: process.env.POSTGRES_USERNAME,
+          password: process.env.POSTGRES_PASSWORD,
+        },
     Joi.alternatives().try(
       Joi.object({
         database: Joi.string().required(),
@@ -38,7 +40,6 @@ export function getPostgresConfig(): PostgresConfig {
 }
 
 export async function initPostgresClient(config?: Partial<PostgresConfig>) {
-  console.log("initPostgresClientConfig", config, getPostgresConfig());
   const _config: PostgresConfig = _.defaults(config || {}, getPostgresConfig());
 
   const client = _config.databaseUrl
