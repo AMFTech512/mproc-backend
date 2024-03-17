@@ -4,7 +4,7 @@ services:
   mproc:
     build:
       context: .
-      dockerfile: mproc.Dockerfile
+      dockerfile: Dockerfile
       target: prerelease
     environment:
       POSTGRES_HOST: postgres_db
