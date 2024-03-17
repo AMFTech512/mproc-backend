@@ -12,6 +12,7 @@ interface PostgresConfig {
 }
 
 export function getPostgresConfig(): PostgresConfig {
+  console.log("env", process.env);
   return Joi.attempt(
     {
       database: process.env.POSTGRES_DATABASE,
