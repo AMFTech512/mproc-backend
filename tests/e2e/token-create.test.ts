@@ -8,7 +8,7 @@ describe("token-create e2e", () => {
     email: `test-${Date.now()}@test.com`,
     password: "password",
   };
-  let token: string;
+  let userJwt: string;
 
   beforeAll(async () => {
     // create a test user
@@ -33,20 +33,23 @@ describe("token-create e2e", () => {
       body: JSON.stringify(newUserBody),
     });
 
-    token = Cookie.parse(tokenRes.headers.get("set-cookie") || "").jwt;
+    userJwt = Cookie.parse(tokenRes.headers.get("set-cookie") || "").jwt;
   });
 
   it("should create an api token successfully", async () => {
-    const tokenCreateUrl = new URL("/token", BASE_URL).toString();
+    const tokenCreateUrl = new URL("/api-key", BASE_URL).toString();
 
     const response = await fetch(tokenCreateUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Cookie: `jwt=${token}`,
+        Cookie: `jwt=${userJwt}`,
       },
+      body: JSON.stringify({ name: "test token" }),
     });
 
     expect(response.status).toBe(201);
+    const body = await response.json();
+    expect(body).toHaveProperty("key");
   });
 });

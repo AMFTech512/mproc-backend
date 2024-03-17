@@ -1,6 +1,8 @@
+import { ApiKeyRepo } from "./api-key-repo";
 import { createDIContainer } from "./di";
 import { initExpressApp } from "./express";
 import { getJwtConfig } from "./jwt";
+import { KeyUsageLogRepo } from "./key-usage-repo";
 import { initQueue } from "./p-queue";
 import { initPostgresClient } from "./postgres";
 import { UserRepo } from "./user-repo";
@@ -21,6 +23,14 @@ async function bootstrap() {
   // initialize the user repo
   console.log("Initializing user repo...");
   container.userRepo = new UserRepo(container);
+
+  // initialize api key repo
+  console.log("Initializing api key repo...");
+  container.apiKeyRepo = new ApiKeyRepo(container);
+
+  // initialize the key usage log repo
+  console.log("Initializing key usage log repo...");
+  container.keyUsageLogRepo = new KeyUsageLogRepo(container);
 
   // initialize the image process queue
   console.log("Initializing process queue...");

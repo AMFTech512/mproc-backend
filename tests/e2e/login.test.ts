@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "bun:test";
+import Cookie from "cookie";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -32,9 +33,10 @@ describe("login e2e", () => {
       body: JSON.stringify(newUserBody),
     });
 
-    console.log(await response.json());
+    const jwt = Cookie.parse(response.headers.get("set-cookie") || "").jwt;
 
     expect(response.status).toBe(200);
+    expect(jwt).toBeDefined();
   });
 
   it("should fail to login with an invalid email", async () => {

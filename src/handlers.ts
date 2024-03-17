@@ -6,18 +6,16 @@ import gm from "gm";
 import { rm } from "fs/promises";
 import { hashPassword, verifyPassword } from "./password";
 import { createUserJwt } from "./jwt";
-import { UserAuthedRequest } from "./middleware";
+import { ApiKeyAuthedRequest, UserAuthedRequest } from "./middleware";
+import { ApiKeyRepo } from "./api-key-repo";
 
 // POST /upload
-export const handleUpload: (container: DIContainer) => RequestHandler =
-  (container: DIContainer) => async (req, res) => {
+export const handleUpload =
+  (container: DIContainer) =>
+  async (req: ApiKeyAuthedRequest, res: Response) => {
     const dbClient = container.postgresClient;
 
     if (req.file) {
-      dbClient.query("INSERT INTO uploads (filename) VALUES ($1)", [
-        req.file.filename,
-      ]);
-
       let reqProcessSteps: ProcessStep<any>[];
       try {
         reqProcessSteps = JSON.parse(req.body.processSteps);
@@ -39,6 +37,15 @@ export const handleUpload: (container: DIContainer) => RequestHandler =
         );
 
         res.status(200).send(imgBuffer);
+
+        // log this in the db
+        await container.keyUsageLogRepo.insert({
+          key_hash: req.apiKey.key_hash,
+          owner_id: req.apiKey.owner_id,
+          operation: "image-process",
+          unit_count: 1,
+          date_executed: new Date(),
+        });
       } catch (e) {
         if (e instanceof ValidationError) {
           res.status(400).send(e.annotate(true));
@@ -139,9 +146,34 @@ export const handleUserLogin: (container: DIContainer) => RequestHandler =
     res.cookie("jwt", token, { secure: true, httpOnly: true }).sendStatus(200);
   };
 
-// POST /token
-export const handleApiTokenCreate =
+interface ApiKeyCreateBody {
+  name: string;
+}
+
+const API_KEY_CREATE_BODY_SCHEMA = Joi.object({
+  name: Joi.string().required(),
+});
+
+// POST /api-key
+export const handleApiKeyCreate =
   (container: DIContainer) => async (req: UserAuthedRequest, res: Response) => {
-    console.log("creating api token for user", req.user.email);
-    res.status(501).send("Not implemented");
+    const { error } = API_KEY_CREATE_BODY_SCHEMA.validate(req.body);
+    if (error) {
+      res.status(400).send(error.message);
+      return;
+    }
+
+    const body = req.body as ApiKeyCreateBody;
+    const [key, keyHash] = ApiKeyRepo.generateKeyHashPair();
+
+    // insert the key into the db
+    await container.apiKeyRepo.insert({
+      key_hash: keyHash,
+      owner_id: req.user.id,
+      is_active: true,
+      created_at: new Date(),
+      name: body.name,
+    });
+
+    res.status(201).json({ key });
   };

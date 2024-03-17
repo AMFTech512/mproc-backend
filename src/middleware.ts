@@ -3,13 +3,18 @@ import { DIContainer } from "./di";
 import Cookie from "cookie";
 import { UserRow } from "./user-repo";
 import { UserJwtPayload, verifyJwt } from "./jwt";
+import { ApiKeyRepo, ApiKeyRow } from "./api-key-repo";
 
 export interface UserAuthedRequest extends Request {
   user: UserRow;
 }
 
+export interface ApiKeyAuthedRequest extends Request {
+  apiKey: ApiKeyRow;
+}
+
 export const authUser: (container: DIContainer) => RequestHandler =
-  (container: DIContainer) => async (req, res, next) => {
+  (container) => async (req, res, next) => {
     const cookies = Cookie.parse(req.headers.cookie || "");
 
     // check if we have a jwt cookie
@@ -50,5 +55,28 @@ export const authUser: (container: DIContainer) => RequestHandler =
     (req as UserAuthedRequest).user = user;
 
     // continue to the next handler
+    next();
+  };
+
+export const apiKey: (container: DIContainer) => RequestHandler =
+  (container) => async (req, res, next) => {
+    const keyHeader = req.headers["authorization"] as string;
+    const key = /^Bearer (.+)$/.exec(keyHeader)?.[1];
+
+    if (!key) {
+      res.status(401).send("Unauthorized");
+      return;
+    }
+
+    const keyHash = ApiKeyRepo.hashKey(key);
+    const apiKeyRow = await container.apiKeyRepo.getByKeyHash(keyHash);
+
+    if (!apiKeyRow || !apiKeyRow.is_active) {
+      res.status(401).send("Unauthorized");
+      return;
+    }
+
+    (req as ApiKeyAuthedRequest).apiKey = apiKeyRow;
+
     next();
   };
