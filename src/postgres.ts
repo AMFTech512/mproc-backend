@@ -38,6 +38,7 @@ export function getPostgresConfig(): PostgresConfig {
 }
 
 export async function initPostgresClient(config?: Partial<PostgresConfig>) {
+  console.log("initPostgresClientConfig", config, getPostgresConfig());
   const _config: PostgresConfig = _.defaults(config || {}, getPostgresConfig());
 
   const client = _config.databaseUrl
