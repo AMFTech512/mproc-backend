@@ -13,6 +13,8 @@ interface PostgresConfig {
   CACert?: string;
 }
 
+const DEFAULT_DATABASE = "defaultdb";
+
 export function getPostgresConfig(): PostgresConfig {
   return Joi.attempt(
     // If DATABASE_URL is set, use it, otherwise use the other environment variables
@@ -49,11 +51,11 @@ export function getPostgresConfig(): PostgresConfig {
 export async function initPostgresClient(config?: Partial<PostgresConfig>) {
   const _config: PostgresConfig = _.defaults(config || {}, getPostgresConfig());
 
-  console.log("postgres config", _config);
   const client = _config.databaseUrl
     ? new Client({
         connectionString: _config.databaseUrl,
         ssl: {
+          rejectUnauthorized: false,
           ca: _config.CACert,
         },
       })
@@ -63,6 +65,10 @@ export async function initPostgresClient(config?: Partial<PostgresConfig>) {
         port: _config.port,
         user: _config.username,
         password: _config.password,
+        ssl: {
+          rejectUnauthorized: false,
+          ca: _config.CACert,
+        },
       });
 
   await client.connect();
@@ -105,7 +111,7 @@ export async function initDb(dbName?: string) {
 export async function dropDb(dbName?: string) {
   console.log(`Dropping database ${dbName}...`);
   // Connect to the default database
-  const pgClient = await initPostgresClient({ database: "postgres" });
+  const pgClient = await initPostgresClient({ database: DEFAULT_DATABASE });
 
   // Get the database name
   const _dbName = dbName || getPostgresConfig().database;
@@ -136,7 +142,7 @@ export async function createTables(pgClient: Client) {
 async function createDatabaseIfNotExists(dbName?: string, pgClient?: Client) {
   // Connect to the default database
   const _pgClient =
-    pgClient || (await initPostgresClient({ database: "postgres" }));
+    pgClient || (await initPostgresClient({ database: DEFAULT_DATABASE }));
 
   // Get the database name
   const _dbName = dbName || getPostgresConfig().database;
