@@ -55,7 +55,7 @@ export async function initPostgresClient(config?: Partial<PostgresConfig>) {
         connectionString: _config.databaseUrl,
         ssl: {
           rejectUnauthorized: true,
-          cert: _config.CACert,
+          ca: _config.CACert,
         },
       })
     : new Client({

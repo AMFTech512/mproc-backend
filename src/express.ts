@@ -19,7 +19,7 @@ interface ServerConfig {
 function getServerConfig(): ServerConfig {
   return Joi.attempt(
     {
-      port: process.env.SERVER_PORT,
+      port: process.env.PORT,
     },
     Joi.object({
       port: Joi.number().required(),
