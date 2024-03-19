@@ -1,3 +1,7 @@
+import Joi from "joi";
+import cors from "cors";
+import { DIContainer } from "./di";
+
 /**
  * Takes an object and returns a set clause string and
  * an array of ordered values to be used in a sql update query.
@@ -30,3 +34,23 @@ export function generateSecureRandomString(length = 16) {
     .getRandomValues(new Uint8Array(length))
     .reduce((acc, byte) => acc + byte.toString(16).padStart(2, "0"), "");
 }
+
+/**
+ * A custom validator for Joi that checks if a string is valid JSON.
+ * @param value
+ * @param helpers
+ * @returns
+ */
+export const validateJson: Joi.CustomValidator<string, object> = (
+  value,
+  helpers
+) => {
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    return helpers.error("Invalid JSON");
+  }
+};
+
+export const oneMonthFromNow = () =>
+  new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);

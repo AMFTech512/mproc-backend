@@ -4,6 +4,7 @@ import Cookie from "cookie";
 import { UserRow } from "./user-repo";
 import { UserJwtPayload, verifyJwt } from "./jwt";
 import { ApiKeyRepo, ApiKeyRow } from "./api-key-repo";
+import cors from "cors";
 
 export interface UserAuthedRequest extends Request {
   user: UserRow;
@@ -12,6 +13,14 @@ export interface UserAuthedRequest extends Request {
 export interface ApiKeyAuthedRequest extends Request {
   apiKey: ApiKeyRow;
 }
+
+export const userAuthCors = (allowedOrigins: string[]) =>
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
+
+export const apiCors = () => cors();
 
 export const authUser: (container: DIContainer) => RequestHandler =
   (container) => async (req, res, next) => {

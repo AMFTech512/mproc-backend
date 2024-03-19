@@ -1,4 +1,4 @@
-import { Client } from "pg";
+import { Client, ClientConfig } from "pg";
 import Joi from "joi";
 import _ from "lodash";
 import path from "path";
@@ -51,25 +51,29 @@ export function getPostgresConfig(): PostgresConfig {
 export async function initPostgresClient(config?: Partial<PostgresConfig>) {
   const _config: PostgresConfig = _.defaults(config || {}, getPostgresConfig());
 
-  const client = _config.databaseUrl
-    ? new Client({
-        connectionString: _config.databaseUrl,
-        ssl: {
-          rejectUnauthorized: true,
-          ca: _config.CACert,
-        },
-      })
-    : new Client({
-        database: _config.database,
-        host: _config.host,
-        port: _config.port,
-        user: _config.username,
-        password: _config.password,
-        ssl: {
-          rejectUnauthorized: true,
-          ca: _config.CACert,
-        },
-      });
+  let pgClientConfig: ClientConfig;
+  if (_config.databaseUrl) {
+    pgClientConfig = {
+      connectionString: _config.databaseUrl,
+    };
+  } else {
+    pgClientConfig = {
+      database: _config.database,
+      host: _config.host,
+      port: _config.port,
+      user: _config.username,
+      password: _config.password,
+    };
+  }
+
+  if (_config.CACert) {
+    pgClientConfig.ssl = {
+      rejectUnauthorized: true,
+      ca: _config.CACert,
+    };
+  }
+
+  const client = new Client(pgClientConfig);
 
   await client.connect();
 

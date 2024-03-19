@@ -141,7 +141,14 @@ export const handleUserLogin: (container: DIContainer) => RequestHandler =
     // TODO: get the nonce from the db
     const token = createUserJwt(userRow.id, 0, container.jwtConfig);
 
-    res.cookie("jwt", token, { secure: true, httpOnly: true }).sendStatus(200);
+    res
+      .cookie("jwt", token, {
+        // secure: true,
+        httpOnly: true,
+        sameSite: "strict",
+        expires: new Date(Date.now() + 3600000),
+      })
+      .sendStatus(200);
   };
 
 interface ApiKeyCreateBody {

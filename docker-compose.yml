@@ -12,7 +12,8 @@ services:
       POSTGRES_DATABASE: mproc_local
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: postgres
-      SERVER_PORT: 3000
+      PORT: 3000
+      USER_AUTH_ALLOWED_ORIGINS: '["http://localhost:5173"]'
       JWT_SECRET: secret
     depends_on:
       postgres_db:
