@@ -54,6 +54,8 @@ export function initExpressApp(container: DIContainer) {
     handleUpload(container) as unknown as RequestHandler
   );
 
+  // set up CORS for the user auth routes to allow cookie auth
+  app.all("/user", userAuthCors(config.userAuthAllowedOrigins));
   app.post(
     "/user",
     // parse the body as json
