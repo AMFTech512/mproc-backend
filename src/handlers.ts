@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "./password";
 import { createUserJwt } from "./jwt";
 import { ApiKeyAuthedRequest, UserAuthedRequest } from "./middleware";
 import { ApiKeyRepo } from "./api-key-repo";
+import { oneMonthFromNow } from "./util";
 
 // POST /upload
 export const handleUpload =
@@ -143,10 +144,10 @@ export const handleUserLogin: (container: DIContainer) => RequestHandler =
 
     res
       .cookie("jwt", token, {
-        // secure: true,
+        secure: true,
         httpOnly: true,
-        sameSite: "strict",
-        expires: new Date(Date.now() + 3600000),
+        sameSite: "none",
+        expires: oneMonthFromNow(),
       })
       .sendStatus(200);
   };
