@@ -71,7 +71,7 @@ const USER_CREATE_BODY_SCHEMA = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
-// POST /user
+// POST /register
 export const handleUserCreate: (container: DIContainer) => RequestHandler =
   (container: DIContainer) => async (req, res) => {
     // validate the request body

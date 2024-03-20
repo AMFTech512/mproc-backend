@@ -13,8 +13,10 @@ services:
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: postgres
       PORT: 3000
-      USER_AUTH_ALLOWED_ORIGINS: '["http://localhost:5173"]'
+      USER_AUTH_ALLOWED_ORIGINS: '["http://localhost:5173", "http://app.mproc.io:5173"]'
       JWT_SECRET: secret
+      WEBAUTHN_RP_NAME: Mproc
+      WEBAUTHN_RP_ID: localhost
     depends_on:
       postgres_db:
         condition: service_healthy

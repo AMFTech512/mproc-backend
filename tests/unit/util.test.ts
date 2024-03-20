@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { generateSecureRandomString, makeSetClause } from "../../src/util";
-import { createHash } from "crypto";
+import { makeInsertClause, makeSetClause } from "../../src/util";
 
 describe("util", () => {
   describe("makeSetClause", () => {
@@ -17,6 +16,26 @@ describe("util", () => {
 
       expect(clause).toMatchSnapshot();
       expect(values).toMatchSnapshot();
+    });
+  });
+
+  describe("makeInsertClause", () => {
+    test("should return a valid insert clause", () => {
+      const obj = {
+        id: "123", // should not be included since it's under the list of excluded keys
+        name: "foo", // should be included
+        age: 42, // should be included
+        email: undefined, // should not be included since it's undefined
+        phone: null, // should be included since we're explicitly setting to null
+      };
+
+      const [clause, values, nextIdx] = makeInsertClause(obj, {
+        exclude: ["id"],
+      });
+
+      expect(clause).toMatchSnapshot();
+      expect(values).toMatchSnapshot();
+      expect(nextIdx).toMatchSnapshot();
     });
   });
 });
