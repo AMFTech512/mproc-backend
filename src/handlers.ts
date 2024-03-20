@@ -9,6 +9,10 @@ import { createUserJwt } from "./jwt";
 import { ApiKeyAuthedRequest, UserAuthedRequest } from "./middleware";
 import { ApiKeyRepo } from "./api-key-repo";
 import { oneMonthFromNow } from "./util";
+import { getRegistrationOptions } from "./webauthn";
+import { verifyRegistrationResponse } from "@simplewebauthn/server";
+import { RegistrationResponseJSON } from "@simplewebauthn/types";
+import { IAuthenticatorInsert } from "./webauthn-authenticator-repo";
 
 // POST /upload
 export const handleUpload =
@@ -63,15 +67,15 @@ export const handleUpload =
 
 interface UserCreateBody {
   email: string;
-  password: string;
+  name: string;
 }
 
 const USER_CREATE_BODY_SCHEMA = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+  name: Joi.string().max(32).required(),
 });
 
-// POST /register
+// POST /user
 export const handleUserCreate: (container: DIContainer) => RequestHandler =
   (container: DIContainer) => async (req, res) => {
     // validate the request body
@@ -82,12 +86,13 @@ export const handleUserCreate: (container: DIContainer) => RequestHandler =
     }
 
     const body = req.body as UserCreateBody;
+    const userId = crypto.randomUUID();
 
     try {
       await container.userRepo.insert({
-        id: crypto.randomUUID(),
+        id: userId,
         email: body.email,
-        password_hash: await hashPassword(body.password),
+        name: body.name,
       });
     } catch (e: any) {
       if (e.code === "23505" && e.constraint === "users_email_key") {
@@ -98,7 +103,115 @@ export const handleUserCreate: (container: DIContainer) => RequestHandler =
       }
     }
 
-    res.sendStatus(201);
+    res
+      .status(201)
+      .json({ token: createUserJwt(userId, 0, container.jwtConfig) });
+  };
+
+// GET /register-auth
+export const handleRegisterAuthGet =
+  (container: DIContainer) => async (req: UserAuthedRequest, res: Response) => {
+    const registrationOptions = await getRegistrationOptions(
+      container.webAuthnConfig,
+      req.user.id,
+      req.user.name
+    );
+
+    await container.webAuthnChallengeRepo.insert({
+      challenge: registrationOptions.challenge,
+      user_id: req.user.id,
+      is_registration: true,
+      created_at: new Date(),
+    });
+
+    res.status(200).json({ registrationOptions });
+  };
+
+interface UserRegisterAuthBody {
+  challenge: string;
+  registrationResponse: RegistrationResponseJSON;
+}
+
+const USER_REGISTER_AUTH_BODY_SCHEMA = Joi.object({
+  challenge: Joi.string().required(),
+  registrationResponse: Joi.object().required(),
+});
+
+// POST /register-auth
+export const handleRegisterAuthPost =
+  (container: DIContainer) => async (req: UserAuthedRequest, res: Response) => {
+    const { error } = USER_REGISTER_AUTH_BODY_SCHEMA.validate(req.body);
+    if (error) {
+      res.status(400).send(error.message);
+      return;
+    }
+
+    const body = req.body as UserRegisterAuthBody;
+
+    const challengeRow = await container.webAuthnChallengeRepo.getByChallenge(
+      body.challenge
+    );
+
+    if (!challengeRow) {
+      res.status(404).send("Challenge not found.");
+      return;
+    }
+
+    if (challengeRow.user_id !== req.user.id) {
+      res
+        .status(403)
+        .send("You are not authorized to complete this registration.");
+      return;
+    }
+
+    let verification;
+    try {
+      verification = await verifyRegistrationResponse({
+        response: body.registrationResponse,
+        expectedChallenge: body.challenge,
+        expectedOrigin: container.webAuthnConfig.origin,
+        expectedRPID: container.webAuthnConfig.rpID,
+      });
+    } catch (error: any) {
+      console.error(error);
+      return res.status(400).send({ error: error.message });
+    }
+
+    if (!verification || !verification.verified) {
+      res.status(400).send({ error: "Verification failed" });
+      return;
+    }
+
+    const { registrationInfo } = verification;
+    if (!registrationInfo) {
+      res.status(400).send({ error: "No registration info returned" });
+      return;
+    }
+
+    const {
+      credentialPublicKey,
+      credentialID,
+      counter,
+      credentialDeviceType,
+      credentialBackedUp,
+    } = registrationInfo;
+
+    // insert the authenticator into the db
+    await container.webAuthnAuthenticatorRepo.insert({
+      credential_id: Buffer.from(credentialID),
+      credential_public_key: Buffer.from(credentialPublicKey),
+      counter: counter.toString(),
+      credential_device_type: credentialDeviceType,
+      is_credential_backed_up: credentialBackedUp,
+      transports: body.registrationResponse.response.transports,
+      user_id: req.user.id,
+      created_at: new Date(),
+    });
+
+    // delete the challenge from the db
+    await container.webAuthnChallengeRepo.deleteByChallenge(body.challenge);
+
+    res.status(201).send("Successfully registered authenticator.");
   };
 
 interface UserLoginBody {

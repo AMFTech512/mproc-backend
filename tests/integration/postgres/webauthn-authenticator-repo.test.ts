@@ -27,6 +27,7 @@ describe("webauthn-authenticator-repo integration", () => {
     credential_device_type: "singleDevice",
     is_credential_backed_up: true,
     user_id: "b5ff1ba9-db12-4724-86c5-738cce48f057",
+    transports: ["usb"],
   };
 
   beforeAll(async () => {

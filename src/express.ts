@@ -4,12 +4,14 @@ import Joi from "joi";
 import multer from "multer";
 import {
   handleApiKeyCreate,
+  handleRegisterAuthGet,
+  handleRegisterAuthPost,
   handleUpload,
   handleUserCreate,
   handleUserLogin,
 } from "./handlers";
 import packageJson from "../package.json";
-import { apiKey, authUser, apiCors, userAuthCors } from "./middleware";
+import { apiKey, authUser, apiCors, appCors } from "./middleware";
 import { validateJson } from "./util";
 
 interface ServerConfig {
@@ -42,7 +44,7 @@ export function initExpressApp(container: DIContainer) {
     res.send(`v${packageJson.version} - OK`);
   });
 
-  // set up CORS for the upload route to allow api key auth
+  // set up CORS
   app.all("/upload", apiCors());
   app.post(
     "/upload",
@@ -54,8 +56,8 @@ export function initExpressApp(container: DIContainer) {
     handleUpload(container) as unknown as RequestHandler
   );
 
-  // set up CORS for the user auth routes to allow cookie auth
-  app.all("/user", userAuthCors(config.userAuthAllowedOrigins));
+  // set up CORS
+  app.all("/user", appCors(config.userAuthAllowedOrigins));
   app.post(
     "/user",
     // parse the body as json
@@ -63,17 +65,28 @@ export function initExpressApp(container: DIContainer) {
     handleUserCreate(container)
   );
 
-  // set up CORS for the user auth routes to allow cookie auth
-  app.all("/login", userAuthCors(config.userAuthAllowedOrigins));
+  // set up CORS
+  app.all("/register-auth", appCors(config.userAuthAllowedOrigins));
+  app.get(
+    "/register-auth",
+    authUser(container),
+    // ts doesn't like the fact that we've added a user to the request object
+    handleRegisterAuthGet(container) as unknown as RequestHandler
+  );
   app.post(
-    "/login",
-    // parse the body as json
+    "/register-auth",
     express.json(),
-    handleUserLogin(container)
+    authUser(container),
+    // ts doesn't like the fact that we've added a user to the request object
+    handleRegisterAuthPost(container) as unknown as RequestHandler
   );
 
-  // set up CORS for the user auth routes to allow cookie auth
-  app.all("/api-key", userAuthCors(config.userAuthAllowedOrigins));
+  // set up CORS
+  app.all("/login", appCors(config.userAuthAllowedOrigins));
+  app.post("/login", express.json(), handleUserLogin(container));
+
+  // set up CORS
+  app.all("/api-key", appCors(config.userAuthAllowedOrigins));
   app.post(
     "/api-key",
     // use the authUser middleware to authenticate the request with a user jwt
