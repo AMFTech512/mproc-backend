@@ -14,20 +14,19 @@ export interface ApiKeyAuthedRequest extends Request {
   apiKey: ApiKeyRow;
 }
 
-export const userAuthCors = (allowedOrigins: string[]) =>
+export const appCors = (allowedOrigins: string[]) =>
   cors({
     origin: allowedOrigins,
-    credentials: true,
   });
 
 export const apiCors = () => cors();
 
 export const authUser: (container: DIContainer) => RequestHandler =
   (container) => async (req, res, next) => {
-    const cookies = Cookie.parse(req.headers.cookie || "");
+    const tokenHeader = req.headers["authorization"] as string;
+    const token = /^Bearer (.+)$/.exec(tokenHeader)?.[1];
 
-    // check if we have a jwt cookie
-    if (!cookies["jwt"]) {
+    if (!token) {
       res.status(401).send("Unauthorized");
       return;
     }
@@ -36,10 +35,7 @@ export const authUser: (container: DIContainer) => RequestHandler =
 
     let jwtPayload: UserJwtPayload;
     try {
-      jwtPayload = verifyJwt<UserJwtPayload>(
-        cookies["jwt"],
-        container.jwtConfig
-      );
+      jwtPayload = verifyJwt<UserJwtPayload>(token, container.jwtConfig);
     } catch (e) {
       res.status(401).send("Unauthorized");
       return;

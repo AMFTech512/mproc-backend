@@ -17,6 +17,7 @@ services:
       JWT_SECRET: secret
       WEBAUTHN_RP_NAME: Mproc
       WEBAUTHN_RP_ID: localhost
+      WEBAUTHN_ORIGIN: http://localhost:5173
     depends_on:
       postgres_db:
         condition: service_healthy

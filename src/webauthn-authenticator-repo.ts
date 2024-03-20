@@ -32,8 +32,27 @@ export class WebAuthnAuthenticatorRepo {
     this._dbClient = container.postgresClient;
   }
 
+  // plain arrays aren't valid json in postgres, so we have these helper functions to convert to and from json
+  static transportsToObj(authenticator: Pick<AuthenticatorRow, "transports">) {
+    const newAuthenticator = {
+      ...authenticator,
+      transports: { arr: authenticator.transports },
+    };
+    return newAuthenticator;
+  }
+
+  static transportsFromObj(
+    authenticator: Pick<AuthenticatorRow, "transports">
+  ) {
+    if (!authenticator?.transports) return;
+    authenticator.transports = (authenticator.transports as any)?.arr;
+    return authenticator;
+  }
+
   async insert(authenticator: IAuthenticatorInsert) {
-    const [insertClause, values] = makeInsertClause(authenticator);
+    const _authenticator =
+      WebAuthnAuthenticatorRepo.transportsToObj(authenticator);
+    const [insertClause, values] = makeInsertClause(_authenticator);
 
     const query = `INSERT INTO webauthn_authenticators ${insertClause}`;
     return await this._dbClient.query(query, values);
@@ -44,7 +63,9 @@ export class WebAuthnAuthenticatorRepo {
       "SELECT * FROM webauthn_authenticators WHERE user_id = $1",
       [userId]
     );
-    return res.rows as AuthenticatorRow[];
+    return res.rows.map((auth) =>
+      WebAuthnAuthenticatorRepo.transportsFromObj(auth)
+    ) as AuthenticatorRow[];
   }
 
   async getByCredentialId(
@@ -54,7 +75,10 @@ export class WebAuthnAuthenticatorRepo {
       "SELECT * FROM webauthn_authenticators WHERE credential_id = $1",
       [credentialId]
     );
-    return res.rows[0] as AuthenticatorRow;
+    const authenticator = WebAuthnAuthenticatorRepo.transportsFromObj(
+      res.rows[0]
+    );
+    return authenticator as AuthenticatorRow;
   }
 
   async deleteByCredentialId(credentialId: Buffer) {

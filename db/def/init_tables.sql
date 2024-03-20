@@ -6,6 +6,13 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) UNIQUE
 );
 
+CREATE TABLE IF NOT EXISTS webauthn_challenges (
+  challenge TEXT PRIMARY KEY NOT NULL,
+  user_id UUID REFERENCES users(id) NOT NULL,
+  is_registration BOOLEAN NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS webauthn_authenticators (
   credential_id BYTEA PRIMARY KEY NOT NULL,
   credential_public_key BYTEA NOT NULL,

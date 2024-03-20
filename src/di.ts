@@ -6,6 +6,8 @@ import { UserRepo } from "./user-repo";
 import { ApiKeyRepo } from "./api-key-repo";
 import { KeyUsageLogRepo } from "./key-usage-repo";
 import { WebAuthnConfig } from "./webauthn";
+import { WebAuthnChallengeRepo } from "./webauthn-challenge-repo";
+import { WebAuthnAuthenticatorRepo } from "./webauthn-authenticator-repo";
 
 export interface DIContainer {
   expressApp: Application;
@@ -13,6 +15,8 @@ export interface DIContainer {
   userRepo: UserRepo;
   apiKeyRepo: ApiKeyRepo;
   keyUsageLogRepo: KeyUsageLogRepo;
+  webAuthnChallengeRepo: WebAuthnChallengeRepo;
+  webAuthnAuthenticatorRepo: WebAuthnAuthenticatorRepo;
   imagePQueue: PQueue;
   jwtConfig: JwtConfig;
   webAuthnConfig: WebAuthnConfig;
