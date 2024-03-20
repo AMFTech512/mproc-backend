@@ -9,3 +9,15 @@ exports[`util makeSetClause should return a valid set clause 2`] = `
   null,
 ]
 `;
+
+exports[`util makeInsertClause should return a valid insert clause 1`] = `"(name, age, phone) VALUES ($1, $2, $3)"`;
+
+exports[`util makeInsertClause should return a valid insert clause 2`] = `
+[
+  "foo",
+  42,
+  null,
+]
+`;
+
+exports[`util makeInsertClause should return a valid insert clause 3`] = `4`;

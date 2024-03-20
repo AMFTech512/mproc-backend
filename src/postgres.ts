@@ -13,7 +13,7 @@ interface PostgresConfig {
   CACert?: string;
 }
 
-const DEFAULT_DATABASE = "defaultdb";
+const DEFAULT_DATABASE = "postgres";
 
 export function getPostgresConfig(): PostgresConfig {
   return Joi.attempt(

@@ -5,6 +5,7 @@ import { JwtConfig } from "./jwt";
 import { UserRepo } from "./user-repo";
 import { ApiKeyRepo } from "./api-key-repo";
 import { KeyUsageLogRepo } from "./key-usage-repo";
+import { WebAuthnConfig } from "./webauthn";
 
 export interface DIContainer {
   expressApp: Application;
@@ -14,6 +15,7 @@ export interface DIContainer {
   keyUsageLogRepo: KeyUsageLogRepo;
   imagePQueue: PQueue;
   jwtConfig: JwtConfig;
+  webAuthnConfig: WebAuthnConfig;
 }
 
 export function createDIContainer(): DIContainer {
