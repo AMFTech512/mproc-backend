@@ -1,5 +1,7 @@
+import { initAirtableClient } from "./airtable";
 import { ApiKeyRepo } from "./api-key-repo";
 import { createDIContainer } from "./di";
+import { EarlyAdopterRepo } from "./early-adopter-repo";
 import { initExpressApp } from "./express";
 import { getJwtConfig } from "./jwt";
 import { KeyUsageLogRepo } from "./key-usage-repo";
@@ -31,6 +33,10 @@ async function bootstrap() {
   console.log("Initializing postgres client...");
   container.postgresClient = await initPostgresClient();
 
+  // initialize the airtable client
+  console.log("Initializing airtable client...");
+  container.airtableClient = initAirtableClient();
+
   // initialize the user repo
   console.log("Initializing user repo...");
   container.userRepo = new UserRepo(container);
@@ -52,6 +58,10 @@ async function bootstrap() {
   container.webAuthnAuthenticatorRepo = new WebAuthnAuthenticatorRepo(
     container
   );
+
+  // initialize the early adopter repo
+  console.log("Initializing early adopter repo...");
+  container.earlyAdopterRepo = new EarlyAdopterRepo(container);
 
   // initialize the image process queue
   console.log("Initializing process queue...");

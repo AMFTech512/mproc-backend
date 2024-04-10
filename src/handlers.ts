@@ -1,10 +1,10 @@
-import { RequestHandler, Response } from "express";
+import { RequestHandler, Response, Request } from "express";
 import { DIContainer } from "./di";
 import { ProcessStep, getBuffer, processSteps } from "./image-processor";
 import Joi, { ValidationError } from "joi";
 import gm from "gm";
 import { rm } from "fs/promises";
-import { hashPassword, verifyPassword } from "./password";
+import { verifyPassword } from "./password";
 import { createUserJwt } from "./jwt";
 import { ApiKeyAuthedRequest, UserAuthedRequest } from "./middleware";
 import { ApiKeyRepo } from "./api-key-repo";
@@ -12,7 +12,21 @@ import { oneMonthFromNow } from "./util";
 import { getRegistrationOptions } from "./webauthn";
 import { verifyRegistrationResponse } from "@simplewebauthn/server";
 import { RegistrationResponseJSON } from "@simplewebauthn/types";
-import { IAuthenticatorInsert } from "./webauthn-authenticator-repo";
+
+// POST /early-adopter
+export const handleEarlyAdopter =
+  (container: DIContainer) => async (req: Request, res: Response) => {
+    const email = req.body?.email as string;
+    if (!email) {
+      res.status(400).send("Email is required.");
+      return;
+    }
+
+    // insert the early adopter into the db
+    await container.earlyAdopterRepo.insertEarlyAdopter(email);
+
+    res.status(201).send("Successfully added early adopter.");
+  };
 
 // POST /upload
 export const handleUpload =
