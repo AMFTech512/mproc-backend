@@ -4,6 +4,7 @@ import Joi from "joi";
 import multer from "multer";
 import {
   handleApiKeyCreate,
+  handleEarlyAdopter,
   handleRegisterAuthGet,
   handleRegisterAuthPost,
   handleUpload,
@@ -13,6 +14,7 @@ import {
 import packageJson from "../package.json";
 import { apiKey, authUser, apiCors, appCors } from "./middleware";
 import { validateJson } from "./util";
+import bodyParser from "body-parser";
 
 interface ServerConfig {
   port: number;
@@ -43,6 +45,12 @@ export function initExpressApp(container: DIContainer) {
   app.get("/", (_, res) => {
     res.send(`v${packageJson.version} - OK`);
   });
+
+  app.post(
+    "/early-adopter",
+    bodyParser.urlencoded({ extended: true }),
+    handleEarlyAdopter(container)
+  );
 
   // set up CORS
   app.all("/upload", apiCors());
