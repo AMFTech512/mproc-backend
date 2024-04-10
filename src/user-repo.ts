@@ -1,17 +1,11 @@
 import { Client } from "pg";
 import { DIContainer } from "./di";
-import { makeInsertClause, makeSetClause } from "./util";
+import { makeSetClause } from "./util";
 
 export interface UserRow {
   id: string;
-  name: string;
   email: string;
-}
-
-export interface IUserInsert {
-  id: string;
-  name?: string;
-  email?: string;
+  password_hash: string;
 }
 
 export class UserRepo {
@@ -39,16 +33,15 @@ export class UserRepo {
     return user;
   }
 
-  async insert(user: IUserInsert) {
-    const [insertClause, values] = makeInsertClause(user);
-    const query = `INSERT INTO users ${insertClause}`;
-    return await this._dbClient.query(query, values);
+  async insert(user: UserRow) {
+    return this._dbClient.query(
+      "INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)",
+      [user.id, user.email, user.password_hash]
+    );
   }
 
   async delete(userId: string) {
-    return await this._dbClient.query("DELETE FROM users WHERE id = $1", [
-      userId,
-    ]);
+    return this._dbClient.query("DELETE FROM users WHERE id = $1", [userId]);
   }
 
   static makeUpdateQuery(user: Partial<UserRow>) {

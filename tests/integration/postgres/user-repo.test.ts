@@ -28,21 +28,13 @@ describe("user-repo integration", () => {
 
   const testUser: UserRow = {
     id: "b5ff1ba9-db12-4724-86c5-738cce48f057",
-    name: "Bob",
     email: "bob@example.com",
+    password_hash: "!",
   };
 
   describe("insert", () => {
     test("should insert a user successfully", async () => {
       await userRepo.insert(testUser);
-    });
-
-    test("should insert the minumu required fields", async () => {
-      const user = {
-        id: "233d6281-6aed-45d6-90bc-a4c16c5f8db0",
-      };
-
-      await userRepo.insert(user);
     });
 
     test("should not insert a user with the same id", async () => {
@@ -52,8 +44,8 @@ describe("user-repo integration", () => {
     test("should not insert a user with the same email", async () => {
       const user = {
         id: "17a2d1a7-99b8-4873-857b-cee8641cc434",
-        name: "Bob",
         email: "bob@example.com",
+        password_hash: "!",
       };
 
       expect(userRepo.insert(user)).rejects.toThrow();

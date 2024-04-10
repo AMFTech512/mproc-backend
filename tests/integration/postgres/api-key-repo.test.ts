@@ -32,6 +32,8 @@ describe("api-key-repo integration", () => {
     // insert a test user
     await container.userRepo.insert({
       id: testKeyRow.owner_id,
+      email: `test@example.com`,
+      password_hash: "!",
     });
   });
 

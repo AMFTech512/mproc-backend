@@ -2,26 +2,8 @@
 
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY NOT NULL,
-  name VARCHAR(32),
-  email VARCHAR(255) UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS webauthn_challenges (
-  challenge TEXT PRIMARY KEY NOT NULL,
-  user_id UUID REFERENCES users(id) NOT NULL,
-  is_registration BOOLEAN NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW() NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS webauthn_authenticators (
-  credential_id BYTEA PRIMARY KEY NOT NULL,
-  credential_public_key BYTEA NOT NULL,
-  counter BIGINT DEFAULT 0 NOT NULL,
-  credential_device_type VARCHAR(100) NOT NULL,
-  is_credential_backed_up BOOLEAN DEFAULT FALSE NOT NULL,
-  transports JSONB,
-  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
-  user_id UUID REFERENCES users(id) NOT NULL
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS api_keys (

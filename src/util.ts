@@ -29,38 +29,6 @@ export function makeSetClause(
   return [parts.join(", "), values, idx];
 }
 
-/**
- * Takes an object and returns an insert clause string and
- * an array of ordered values to be used in a sql insert query.
- * Returns a tuple of [set clause string, values array, next param index].
- * Use the options.exclude parameter to exclude certain keys from the set clause.
- * @param obj
- * @param options
- * @returns
- */
-export function makeInsertClause(
-  obj: object,
-  options?: { exclude?: string[] }
-): [string, unknown[], number] {
-  const values: unknown[] = [];
-  const keys: string[] = Object.keys(obj).filter((key) => {
-    const value = (obj as Record<string, unknown>)[key];
-    if (value !== undefined && !options?.exclude?.includes(key)) {
-      values.push(value);
-      return true;
-    } else {
-      return false;
-    }
-  });
-
-  const placeholders = keys.map((_, i) => `$${i + 1}`);
-  const insertClause = `(${keys.join(", ")}) VALUES (${placeholders.join(
-    ", "
-  )})`;
-
-  return [insertClause, values, keys.length + 1];
-}
-
 export function generateSecureRandomString(length = 16) {
   return crypto
     .getRandomValues(new Uint8Array(length))
