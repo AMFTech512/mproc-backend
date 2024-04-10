@@ -25,7 +25,7 @@ export const handleEarlyAdopter =
     // insert the early adopter into the db
     await container.earlyAdopterRepo.insertEarlyAdopter(email);
 
-    res.status(201).send("Successfully added early adopter.");
+    res.redirect("/early-adopter/");
   };
 
 // POST /upload
