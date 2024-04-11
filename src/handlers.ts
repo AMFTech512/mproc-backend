@@ -22,8 +22,16 @@ export const handleEarlyAdopter =
       return;
     }
 
-    // insert the early adopter into the db
-    await container.earlyAdopterRepo.insertEarlyAdopter(email);
+    // add the email to the contact list
+    await container.emailService.addContact({ email });
+
+    // send them a welcome email;
+    // don't await this so that the request can return immediately
+    container.emailService.sendEmail(
+      email,
+      "Welcome to mproc!",
+      "Welcome to mproc! We're excited to have you on board."
+    );
 
     res.redirect("/early-adopter/");
   };
@@ -258,7 +266,7 @@ export const handleUserLogin: (container: DIContainer) => RequestHandler =
 
     const isPasswordCorrect = await verifyPassword(
       body.password,
-      userRow.password_hash
+      "userRow.password_hash"
     );
     if (!isPasswordCorrect) {
       res.status(401).send("Incorrect password.");

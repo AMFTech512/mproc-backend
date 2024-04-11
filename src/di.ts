@@ -8,17 +8,17 @@ import { KeyUsageLogRepo } from "./key-usage-repo";
 import { WebAuthnConfig } from "./webauthn";
 import { WebAuthnChallengeRepo } from "./webauthn-challenge-repo";
 import { WebAuthnAuthenticatorRepo } from "./webauthn-authenticator-repo";
-import Airtable from "airtable";
-import { EarlyAdopterRepo } from "./early-adopter-repo";
+import { EmailService } from "./email-service";
+import { Resend } from "resend";
 
 export interface DIContainer {
   expressApp: Application;
   postgresClient: Client;
-  airtableClient: Airtable;
+  resendClient: Resend;
   userRepo: UserRepo;
   apiKeyRepo: ApiKeyRepo;
   keyUsageLogRepo: KeyUsageLogRepo;
-  earlyAdopterRepo: EarlyAdopterRepo;
+  emailService: EmailService;
   webAuthnChallengeRepo: WebAuthnChallengeRepo;
   webAuthnAuthenticatorRepo: WebAuthnAuthenticatorRepo;
   imagePQueue: PQueue;

@@ -1,12 +1,12 @@
-import { initAirtableClient } from "./airtable";
 import { ApiKeyRepo } from "./api-key-repo";
 import { createDIContainer } from "./di";
-import { EarlyAdopterRepo } from "./early-adopter-repo";
+import { EmailService } from "./email-service";
 import { initExpressApp } from "./express";
 import { getJwtConfig } from "./jwt";
 import { KeyUsageLogRepo } from "./key-usage-repo";
 import { initQueue } from "./p-queue";
 import { initPostgresClient } from "./postgres";
+import { initResendClient } from "./resend";
 import { UserRepo } from "./user-repo";
 import { getWebAuthnConfig } from "./webauthn";
 import { WebAuthnAuthenticatorRepo } from "./webauthn-authenticator-repo";
@@ -33,9 +33,9 @@ async function bootstrap() {
   console.log("Initializing postgres client...");
   container.postgresClient = await initPostgresClient();
 
-  // initialize the airtable client
-  console.log("Initializing airtable client...");
-  container.airtableClient = initAirtableClient();
+  // initialize the resend client
+  console.log("Initializing resend client...");
+  container.resendClient = initResendClient();
 
   // initialize the user repo
   console.log("Initializing user repo...");
@@ -59,9 +59,9 @@ async function bootstrap() {
     container
   );
 
-  // initialize the early adopter repo
+  // initialize the email service
   console.log("Initializing early adopter repo...");
-  container.earlyAdopterRepo = new EarlyAdopterRepo(container);
+  container.emailService = new EmailService(container);
 
   // initialize the image process queue
   console.log("Initializing process queue...");
