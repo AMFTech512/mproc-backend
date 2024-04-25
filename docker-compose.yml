@@ -18,6 +18,7 @@ services:
       WEBAUTHN_RP_NAME: Mproc
       WEBAUTHN_RP_ID: localhost
       WEBAUTHN_ORIGIN: http://localhost:5173
+      RESEND_API_KEY: re_DtEaPAX9_LCnWmzBRcWCAhqo83zjxXyRn
     depends_on:
       postgres_db:
         condition: service_healthy

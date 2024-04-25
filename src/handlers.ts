@@ -30,7 +30,8 @@ export const handleEarlyAdopter =
     container.emailService.sendEmail(
       email,
       "Welcome to mproc!",
-      "Welcome to mproc! We're excited to have you on board."
+      // render the early-access email template
+      container.htmlTemplateService.renderTemplate("early-access", {})
     );
 
     res.redirect("/early-adopter/");

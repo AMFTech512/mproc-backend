@@ -2,6 +2,7 @@ import { ApiKeyRepo } from "./api-key-repo";
 import { createDIContainer } from "./di";
 import { EmailService } from "./email-service";
 import { initExpressApp } from "./express";
+import { HtmlTemplateService } from "./html-template-service";
 import { getJwtConfig } from "./jwt";
 import { KeyUsageLogRepo } from "./key-usage-repo";
 import { initQueue } from "./p-queue";
@@ -58,6 +59,10 @@ async function bootstrap() {
   container.webAuthnAuthenticatorRepo = new WebAuthnAuthenticatorRepo(
     container
   );
+
+  // initialize the html template service
+  console.log("Initializing html template service...");
+  container.htmlTemplateService = await HtmlTemplateService.init();
 
   // initialize the email service
   console.log("Initializing early adopter repo...");

@@ -2,6 +2,7 @@ import { beforeAll, describe, it } from "bun:test";
 import { createDIContainer } from "../../../src/di";
 import { EmailService } from "../../../src/email-service";
 import { initResendClient } from "../../../src/resend";
+import { HtmlTemplateService } from "../../../src/html-template-service";
 
 describe("Email service", () => {
   const container = createDIContainer();
@@ -12,7 +13,7 @@ describe("Email service", () => {
     emailService = new EmailService(container);
   });
 
-  it.only("should add a contact", async () => {
+  it("should add a contact", async () => {
     await emailService.addContact({
       email: `${crypto.randomUUID()}@example.com`,
       firstName: "John",
@@ -26,5 +27,23 @@ describe("Email service", () => {
       "Integration Test",
       "<p>The integration test worked!</p>"
     );
+  });
+
+  describe("HTML Template Service", () => {
+    let htmlTemplateService: HtmlTemplateService;
+
+    beforeAll(async () => {
+      htmlTemplateService = await HtmlTemplateService.init();
+    });
+
+    it("should send an early-access thank you", async () => {
+      const message = htmlTemplateService.renderTemplate("early-access", {});
+
+      await emailService.sendEmail(
+        `amftech512@gmail.com`,
+        "Integration Test (early access thank you)",
+        message
+      );
+    });
   });
 });

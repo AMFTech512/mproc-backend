@@ -10,6 +10,7 @@ import { WebAuthnChallengeRepo } from "./webauthn-challenge-repo";
 import { WebAuthnAuthenticatorRepo } from "./webauthn-authenticator-repo";
 import { EmailService } from "./email-service";
 import { Resend } from "resend";
+import { HtmlTemplateService } from "./html-template-service";
 
 export interface DIContainer {
   expressApp: Application;
@@ -18,6 +19,7 @@ export interface DIContainer {
   userRepo: UserRepo;
   apiKeyRepo: ApiKeyRepo;
   keyUsageLogRepo: KeyUsageLogRepo;
+  htmlTemplateService: HtmlTemplateService;
   emailService: EmailService;
   webAuthnChallengeRepo: WebAuthnChallengeRepo;
   webAuthnAuthenticatorRepo: WebAuthnAuthenticatorRepo;
